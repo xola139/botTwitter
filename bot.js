@@ -8,10 +8,10 @@
  */
 
 /* Configure the Twitter API */
-var TWITTER_CONSUMER_KEY = '';
-var TWITTER_CONSUMER_SECRET = '';
-var TWITTER_ACCESS_TOKEN = '';
-var TWITTER_ACCESS_TOKEN_SECRET = '';
+var TWITTER_CONSUMER_KEY = 'sFkfRqeZJbpeDNRY5AEi26yM7';
+var TWITTER_CONSUMER_SECRET = 'zIYX0eY3GcfrwElGYYjuVm5LI421wG02C8WuMaLU107Owq6hay';
+var TWITTER_ACCESS_TOKEN = '86590440-4OHbSoxiPso4Iw0gSdhM3A4HvvOHco85wGG2ysWys';
+var TWITTER_ACCESS_TOKEN_SECRET = '2vNQSvTLfZDU2K2r5UXcBdtKla7Jf2tbxXWQhTbH2aOxF';
 
 /* Set Twitter search phrase */
 var TWITTER_SEARCH_PHRASE = '#technology OR #design';
@@ -76,8 +76,63 @@ function BotRetweet() {
 	}
 }
 
+function lastThreeTwit(){
+	var options = { screen_name: 'xola139',count: 3 };
+
+	Bot.get('statuses/user_timeline', options , function(err, data) {
+	  for (var i = 0; i < data.length ; i++) {
+	    console.log(data[i].text);
+	  }
+	})
+}
+
+function firtStream(){
+	// 
+	//  filter the twitter public stream by the word 'mango'. 
+	// 
+	var stream = Bot.stream('statuses/filter', { track: 'excelente' })
+	 
+	stream.on('tweet', function (tweet) {
+	  console.log(tweet)
+	})
+}
+
+function secondStream(){
+	// 
+	//  filter the twitter public stream by the word 'mango'. 
+	// 
+	var options = { screen_name: 'xola139' };
+	var stream = Bot.stream('statuses/home_timeline')
+	 
+	stream.on('tweet', function (tweet) {
+	  console.log(tweet)
+	})
+}
+
+
+function getHomeTimeLine(){
+	var options = { screen_name: 'xola139',count: 1 };
+
+	Bot.get('statuses/home_timeline', options , function(err, data) {
+	  for (var i = 0; i < data.length ; i++) {
+	    console.log(data[i]);
+	  }
+	})
+}
+
 /* Set an interval of 30 minutes (in microsecondes) */
-setInterval(BotRetweet, 30*60*1000);
+//setInterval(BotRetweet, 5*60*1000);
 
 /* Initiate the Bot */
-BotInit();
+//BotInit();
+
+//lastThreeTwit();
+//firtStream();
+
+//getHomeTimeLine();
+
+//secondStream();
+
+setInterval(getHomeTimeLine, 1*60*1000);
+
+getHomeTimeLine();
