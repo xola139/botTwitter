@@ -23,12 +23,15 @@ var Bot = new Twit({
 console.log('The bot is running...');
 
 function getHomeTimeLine(){
-	var options = { screen_name: config.twitter.user,count: 10 };
+	console.log(config.userView.user);
+
+	var options = { screen_name: config.userView.user,count: 10 };
 	
-	Bot.get('statuses/home_timeline', options , function(err, data) {
+	Bot.get('statuses/home_timeline' , function(err, data) {
 
 	  for (var i = 0; i < data.length ; i++) {
 			var texto = data[i].text.toUpperCase();
+			console.log(texto);
 			if(texto.indexOf('PROMOCION')> -1 || texto.indexOf('PROMO')> -1 ){
 				var theData = {};	    	
 				theData.id = data[i].user.screen_name;
