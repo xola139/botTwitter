@@ -31,8 +31,8 @@ function getHomeTimeLine(){
         console.log(utc + " get numer twiits  "+data.length);
           for (var i = 0; i < data.length ; i++) {
           	
-                //evaluaPromos(data[i]);
-                //evaluaDisponible(data[i]);
+                evaluaPromos(data[i]);
+                evaluaDisponible(data[i]);
           }
         })
 }
