@@ -1,6 +1,7 @@
 var config  = require('./config');
 var mongoose = require('mongoose');
 var Promos = require('./models/Promos.js');
+var Images = require('./models/Images.js');
 var Disponible = require('./models/Disponible.js');
 
 
@@ -22,65 +23,59 @@ var Bot = new Twit({
 console.log('The bot is running...');
 
 function getHomeTimeLine(){
-        var options = { screen_name: config.userView.user ,count:1};
-        var utc = new Date().toJSON().slice(0,10).replace(/-/g,'/');
-
+        var options = { screen_name: config.userView.user ,count:100};
+        
         Bot.get('statuses/home_timeline', options , function(err, data) {
-
-        	console.log(data);
-        console.log(utc + " get numer twiits  "+data.length);
+        console.log(getTime() + " get numer twiits  "+data.length);
           for (var i = 0; i < data.length ; i++) {
-          	
-                evaluaPromos(data[i]);
-                evaluaDisponible(data[i]);
+            evaluaPromos(data[i]);
+            evaluaDisponible(data[i]);
           }
         })
 }
 
 
 var evaluaDisponible = function(data){
-        var texto = data.text.toUpperCase();
-        
-        if(texto.indexOf('DISPONIBLE')> -1 || texto.indexOf('DISPO')> -1 || texto.indexOf('ACTIVA')> -1){
-                var theData = {};
-                theData.id = data.user.screen_name;
-                theData.descripcion = data.text;
-                theData.ciudad = validaCiudad(data.text);
-                theData.created_at = data.created_at;
-                saveDataDisponible(theData);
+       var texto = data.text.toUpperCase();
+       if(texto.indexOf('DISPONIBLE')> -1 || texto.indexOf('DISPO')> -1 || texto.indexOf('ACTIVA')> -1){
+            var theData = {};
+            theData.id = data.user.screen_name;
+            theData.disponibles=[{descripcion:data.text,ciudad :validaCiudad(data.text),created_at:data.created_at}];
+            saveDataDisponible(theData);
         }
 
 }
-var ciudades = ['CDMX','PUEBLA','CUERNAVACA','GUADALAJARA','QUERETARO','AGUAS','OAXACA','MONTERREY','MEXICO']
+var ciudades = ['CDMX','PUEBLA','CUERNAVACA','GUADALAJARA','QUERETARO','AGUAS','OAXACA','MONTERREY','MEXICO','CANCUN']
 var validaCiudad = function(texto){
 
     var len = ciudades.length;
     for(var i = 0 ; i < len;i++)
     {
-        if(texto.indexOf(ciudades[i])> -1){return i;}
+        if(texto.indexOf(ciudades[i])> -1){return ciudades[i];}
     }
     return '';
 
 }
 
 var evaluaPromos = function(data){
-        var texto = data.text.toUpperCase();
-        
-        if(texto.indexOf('PROMOCION')> -1 || texto.indexOf('PROMO')> -1 ){
+       var texto = data.text.toUpperCase();
+        if(texto.indexOf('PROMO')> -1 || texto.indexOf('PROMOCION')> -1 ){
                 var theData = {};
                 theData.id = data.user.screen_name;
                 theData.avatar = data.user.profile_image_url.replace("_normal.jpg","_400x400.jpg");
                 theData.promos =[{descripcion : data.text,created_at:data.created_at,idTwit:data.id,id_str:data.id_str}];
-                saveData(theData);
+                saveDataPromo(theData);
         }
 
 }
 
 //Funcion que inserta en DB
 var insertIfNoRecordFound = function (data){
+
+                console.log(data);
         Promos.create(data, function (err, post) {
                 if (err) return next(err);
-                console.log("save registerr");
+                console.log(getTime()+ " -- save register Promo!! ");
         });
 };
 
@@ -88,36 +83,49 @@ var insertIfNoRecordFound = function (data){
 var updateRecordFound = function (data){
         Promos.findByIdAndUpdate(data._id, data, function (err, post) {
         if (err) return next(err);
-        console.log("save update");
+        console.log(getTime()+" -- save update Promo");
         });
 };
 
 
-var saveData = function (data){
+var saveDataPromo = function (data){
+    Promos.findOne({id : data.id},function (err,promo) {
+        if (err) return next(err);
 
-                 Promos.findOne({id : data.id},function (err,promo) {
-                    if (err) return next(err);
-
-                        if(!promo){
-                                insertIfNoRecordFound(data);
-                        }else{
-                                promo.promos.push(data.promos[0])
-                                updateRecordFound(promo);
-                        }
+        if(!promo){
+            Images.findOne({id : data.id},function (err,images) {
+                if (err) return next(err);
+                if(images != null)
+                    data.fk_images = images._id;
+                insertIfNoRecordFound(data);
+            });
+        }else{
+            promo.promos.push(data.promos[0])
+            updateRecordFound(promo);
+    }
  });
 
 };
 
 
 var saveDataDisponible = function (data){
-        Disponible.findOne({id : data.id},function (err,promo) {
+
+
+        Disponible.findOne({id : data.id},function (err,dispo) {
                 if (err) return next(err);
-                if(!promo){
+                if(dispo == null){
                         Disponible.create(data, function (err, post) {
                                 if (err) return next(err);
-                                console.log("save registerr");
+                                console.log(getTime() +"  save register Disponible");
                         });
-                    }
+                }else{
+                    dispo.disponibles.push(data.disponibles[0]);
+                    Disponible.findByIdAndUpdate(dispo._id, dispo, function (err, post) {
+                        
+                    if (err) return next(err);
+                    console.log(getTime()+" -- save update Disponible");
+                    });
+                }
         });
 
 
@@ -128,6 +136,7 @@ var saveDataDisponible = function (data){
 
 setInterval(getHomeTimeLine, 20*60*1000);
 
+//Init operation
 getHomeTimeLine();
 
 
@@ -143,4 +152,10 @@ var validaFecha = function(doc){
 
         return daysDiff;
 
+}
+
+
+
+function getTime(){
+    return utc = new Date().toJSON().slice(0,10).replace(/-/g,'/');
 }
