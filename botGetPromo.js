@@ -22,14 +22,17 @@ var Bot = new Twit({
 console.log('The bot is running...');
 
 function getHomeTimeLine(){
-        var options = { screen_name: config.userView.user ,count:100 };
+        var options = { screen_name: config.userView.user ,count:100};
         var utc = new Date().toJSON().slice(0,10).replace(/-/g,'/');
 
         Bot.get('statuses/home_timeline', options , function(err, data) {
+
+        
         console.log(utc + " get numer twiits  "+data.length);
           for (var i = 0; i < data.length ; i++) {
-                //evaluaPromos(data[i]);
-                evaluaDisponible(data[i]);
+          	
+                evaluaPromos(data[i]);
+               // evaluaDisponible(data[i]);
           }
         })
 }
@@ -43,17 +46,18 @@ var evaluaDisponible = function(data){
                 theData.id = data.user.screen_name;
                 theData.descripcion = data.text;
                 theData.ciudad = validaCiudad(data.text);
+                theData.created_at = data.created_at;
                 saveDataDisponible(theData);
         }
 
 }
-var ciudades = ['CDMX','PUEBLA','CUERNAVACA','GUADALAJARA','QUERETARO','AGUAS','OAXACA','MONTERREY','MEXICO']
+var ciudades = ['CDMX','PUEBLA','CUERNAVACA','GUADALAJARA','QUERETARO','AGUAS','OAXACA','MONTERREY','MEXICO','CANCUN']
 var validaCiudad = function(texto){
 
     var len = ciudades.length;
     for(var i = 0 ; i < len;i++)
     {
-        if(texto.indexOf(ciudades[i])> -1){return i;}
+        if(texto.indexOf(ciudades[i])> -1){return ciudades[i];}
     }
     return '';
 
@@ -61,8 +65,8 @@ var validaCiudad = function(texto){
 
 var evaluaPromos = function(data){
         var texto = data.text.toUpperCase();
-        
-        if(texto.indexOf('PROMOCION')> -1 || texto.indexOf('PROMO')> -1 ){
+       
+        if(texto.indexOf('PROMO')> -1 || texto.indexOf('PROMOCION')> -1 ){
                 var theData = {};
                 theData.id = data.user.screen_name;
                 theData.avatar = data.user.profile_image_url.replace("_normal.jpg","_400x400.jpg");
@@ -97,6 +101,7 @@ var saveData = function (data){
                         if(!promo){
                                 insertIfNoRecordFound(data);
                         }else{
+                                
                                 promo.promos.push(data.promos[0])
                                 updateRecordFound(promo);
                         }
@@ -140,4 +145,3 @@ var validaFecha = function(doc){
         return daysDiff;
 
 }
-
