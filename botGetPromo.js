@@ -30,9 +30,8 @@ function getHomeTimeLine(){
         
         console.log(utc + " get numer twiits  "+data.length);
           for (var i = 0; i < data.length ; i++) {
-          	
-                evaluaPromos(data[i]);
-               // evaluaDisponible(data[i]);
+          	//evaluaPromos(data[i]);
+                evaluaDisponible(data[i]);
           }
         })
 }
@@ -40,8 +39,11 @@ function getHomeTimeLine(){
 
 var evaluaDisponible = function(data){
         var texto = data.text.toUpperCase();
-        
-        if(texto.indexOf('DISPONIBLE')> -1 || texto.indexOf('DISPO')> -1 || texto.indexOf('ACTIVA')> -1){
+        var condicion = "ideas";
+
+
+        if(texto.indexOf(condicion.toUpperCase())> -1 ){
+        //if(texto.indexOf('DISPONIBLE')> -1 || texto.indexOf('DISPO')> -1 || texto.indexOf('ACTIVA')> -1){
                 var theData = {};
                 theData.id = data.user.screen_name;
                 theData.descripcion = data.text;
@@ -65,13 +67,15 @@ var validaCiudad = function(texto){
 
 var evaluaPromos = function(data){
         var texto = data.text.toUpperCase();
-       
-        if(texto.indexOf('PROMO')> -1 || texto.indexOf('PROMOCION')> -1 ){
+        //var condicion ="mujer"
+       if(texto.indexOf('PROMO')> -1 || texto.indexOf('PROMOCION')> -1 ){
+       // if(texto.indexOf(condicion.toUpperCase())> -1  ){
                 var theData = {};
                 theData.id = data.user.screen_name;
                 theData.avatar = data.user.profile_image_url.replace("_normal.jpg","_400x400.jpg");
                 theData.promos =[{descripcion : data.text,created_at:data.created_at,idTwit:data.id,id_str:data.id_str}];
                 saveData(theData);
+               
         }
 
 }
@@ -94,24 +98,45 @@ var updateRecordFound = function (data){
 
 
 var saveData = function (data){
-
-                 Promos.findOne({id : data.id},function (err,promo) {
-                    if (err) return next(err);
-
-                        if(!promo){
+        return new Promise(function(resolve, reject) {
+                Promos.find({id: data.id},function(err, promo) {
+                  if (err) {
+                    reject(err);
+                  } else {
+                        if(promo.length == 0){
                                 insertIfNoRecordFound(data);
                         }else{
-                                
-                                promo.promos.push(data.promos[0])
-                                updateRecordFound(promo);
-                        }
- });
+                                promo[0].promos.push(data.promos[0])
+                                updateRecordFound(promo[0]);
+                        }                                          
+                    resolve(promo);
+                }          
+                });
+        });
 
 };
 
 
 var saveDataDisponible = function (data){
-        Disponible.findOne({id : data.id},function (err,promo) {
+        console.log("llego a saveData");
+        return new Promise(function(resolve, reject) {
+                Disponible.find({id: data.id},function(err, dispo) {
+                  if (err) {
+                    reject(err);
+                  } else {
+                        if(dispo.length == 0){
+                                Disponible.create(data, function (err, post) {
+                                        if (err) return next(err);
+                                        console.log("save register Disponible");
+                                });
+                        }                                          
+                    resolve(dispo);
+                }          
+                });
+        });
+
+
+        /*Disponible.findOne({id : data.id},function (err,promo) {
                 if (err) return next(err);
                 if(!promo){
                         Disponible.create(data, function (err, post) {
@@ -119,11 +144,7 @@ var saveDataDisponible = function (data){
                                 console.log("save registerr");
                         });
                     }
-        });
-
-
-       
-
+        });*/
 };
 
 
