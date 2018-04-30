@@ -1,6 +1,7 @@
 var config  = require('./config');
 var mongoose = require('mongoose');
 var Promos = require('./models/Promos.js');
+var Images = require('./models/Images.js');
 var Disponible = require('./models/Disponible.js');
 
 
@@ -22,37 +23,35 @@ var Bot = new Twit({
 console.log('The bot is running...');
 
 function getHomeTimeLine(){
-        var options = { screen_name: config.userView.user ,count:100};
-        var utc = new Date().toJSON().slice(0,10).replace(/-/g,'/');
-
-        Bot.get('statuses/home_timeline', options , function(err, data) {
-
+        var options = { screen_name: config.userView.user ,count:200};
         
-        console.log(utc + " get numer twiits  "+data.length);
+        Bot.get('statuses/home_timeline', options , function(err, data) {
+        console.log(getTime() + " get numer twiits  "+data.length);
           for (var i = 0; i < data.length ; i++) {
-          	//evaluaPromos(data[i]);
+                evaluaPromos(data[i]);
                 evaluaDisponible(data[i]);
+
           }
         })
 }
 
 
 var evaluaDisponible = function(data){
-        var texto = data.text.toUpperCase();
-        var condicion = "ideas";
 
+        //var condicion ="primer";
+       var texto = data.text.toUpperCase();
+       
+       //if(texto.indexOf(condicion.toUpperCase())> -1  ){
+       if(texto.indexOf('DISPONIBLE')> -1 || texto.indexOf('DISPO')> -1 || texto.indexOf('ACTIVA')> -1){
+            var theData = {};
+            theData.id = data.user.screen_name;
+            theData.disponibles=[{descripcion:data.text,ciudad :validaCiudad(data.text),created_at:data.created_at}];
+            saveDataDisponible(theData);
 
-        if(texto.indexOf(condicion.toUpperCase())> -1 ){
-        //if(texto.indexOf('DISPONIBLE')> -1 || texto.indexOf('DISPO')> -1 || texto.indexOf('ACTIVA')> -1){
-                var theData = {};
-                theData.id = data.user.screen_name;
-                theData.descripcion = data.text;
-                theData.ciudad = validaCiudad(data.text);
-                theData.created_at = data.created_at;
-                saveDataDisponible(theData);
         }
 
 }
+
 var ciudades = ['CDMX','PUEBLA','CUERNAVACA','GUADALAJARA','QUERETARO','AGUAS','OAXACA','MONTERREY','MEXICO','CANCUN']
 var validaCiudad = function(texto){
 
@@ -66,16 +65,20 @@ var validaCiudad = function(texto){
 }
 
 var evaluaPromos = function(data){
+
         var texto = data.text.toUpperCase();
-        //var condicion ="mujer"
+       // var condicion ="look"
        if(texto.indexOf('PROMO')> -1 || texto.indexOf('PROMOCION')> -1 ){
        // if(texto.indexOf(condicion.toUpperCase())> -1  ){
+
+
                 var theData = {};
                 theData.id = data.user.screen_name;
                 theData.avatar = data.user.profile_image_url.replace("_normal.jpg","_400x400.jpg");
                 theData.promos =[{descripcion : data.text,created_at:data.created_at,idTwit:data.id,id_str:data.id_str}];
-                saveData(theData);
-               
+
+                saveDataPromo(theData);
+
         }
 
 }
@@ -84,7 +87,7 @@ var evaluaPromos = function(data){
 var insertIfNoRecordFound = function (data){
         Promos.create(data, function (err, post) {
                 if (err) return next(err);
-                console.log("save registerr");
+                console.log(getTime()+ " -- save register Promo!! ");
         });
 };
 
@@ -92,12 +95,13 @@ var insertIfNoRecordFound = function (data){
 var updateRecordFound = function (data){
         Promos.findByIdAndUpdate(data._id, data, function (err, post) {
         if (err) return next(err);
-        console.log("save update");
+        console.log(getTime()+" -- save update Promo");
         });
 };
 
 
-var saveData = function (data){
+
+var saveDataPromo = function (data){
         return new Promise(function(resolve, reject) {
                 Promos.find({id: data.id},function(err, promo) {
                   if (err) {
@@ -113,12 +117,11 @@ var saveData = function (data){
                 }          
                 });
         });
-
 };
 
 
 var saveDataDisponible = function (data){
-        console.log("llego a saveData");
+        
         return new Promise(function(resolve, reject) {
                 Disponible.find({id: data.id},function(err, dispo) {
                   if (err) {
@@ -129,28 +132,25 @@ var saveDataDisponible = function (data){
                                         if (err) return next(err);
                                         console.log("save register Disponible");
                                 });
-                        }                                          
+                        }else{
+                                
+                                dispo[0].disponibles.push(data.disponibles[0])
+                                Disponible.findByIdAndUpdate(dispo[0]._id, dispo[0], function (err, post) {
+                                        if (err) return next(err);
+                                        console.log(getTime()+" -- save update Disponible");
+                                        });
+                        }                                           
                     resolve(dispo);
                 }          
                 });
         });
-
-
-        /*Disponible.findOne({id : data.id},function (err,promo) {
-                if (err) return next(err);
-                if(!promo){
-                        Disponible.create(data, function (err, post) {
-                                if (err) return next(err);
-                                console.log("save registerr");
-                        });
-                    }
-        });*/
 };
 
 
 setInterval(getHomeTimeLine, 20*60*1000);
 
-getHomeTimeLine();
+//Init operation
+//getHomeTimeLine();
 
 
 
@@ -166,3 +166,12 @@ var validaFecha = function(doc){
         return daysDiff;
 
 }
+
+
+
+function getTime(){
+    return utc = new Date().toJSON().slice(0,19).replace(/-/g,'/').replace(/T/g,'  ');
+}
+
+
+
