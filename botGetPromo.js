@@ -27,18 +27,22 @@ function getHomeTimeLine(){
         
         Bot.get('statuses/home_timeline', options , function(err, data) {
         console.log(getTime() + " get numer twiits  "+data.length);
-          /*for (var i = 0; i < data.length ; i++) {
+
+          for (var i = 0; i < data.length ; i++) {
                 evaluaPromos(data[i]);
                 evaluaDisponible(data[i]);
 
-          }*/
+          }
+
         })
 }
 
 
 var evaluaDisponible = function(data){
 
+
         //var condicion ="locales";
+
        var texto = data.text.toUpperCase();
        
        //if(texto.indexOf(condicion.toUpperCase())> -1  ){
@@ -134,7 +138,9 @@ var saveDataDisponible = function (data){
                                 Disponible.create(data, function (err, post) {
                                         if (err) return next(err);
                                         console.log("save register Disponible");
+
                                         updateDisponible(data);
+
                                 });
                         }else{
                                 
@@ -142,7 +148,9 @@ var saveDataDisponible = function (data){
                                 Disponible.findByIdAndUpdate(dispo[0]._id, dispo[0], function (err, post) {
                                         if (err) return next(err);
                                         console.log(getTime()+" -- save update Disponible");
+
                                         updateDisponible(data);
+
                                         });
                         }                                           
                     resolve(dispo);
@@ -155,7 +163,7 @@ var saveDataDisponible = function (data){
 //setInterval(getHomeTimeLine, 20*60*1000);
 
 //Init operation
-getHomeTimeLine();
+//getHomeTimeLine();
 
 
 
@@ -177,6 +185,7 @@ var validaFecha = function(doc){
 function getTime(){
     return utc = new Date().toJSON().slice(0,19).replace(/-/g,'/').replace(/T/g,'  ');
 }
+
 
 var updateDisponible = function(data){
        
@@ -209,3 +218,4 @@ var updateDisponible = function(data){
 }
 
 setTimeout(function(){mongoose.connection.close()}, 20000);
+
