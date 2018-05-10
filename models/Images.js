@@ -2,6 +2,7 @@
 
 var ImagesSchema = new mongoose.Schema({
   id: String,
+  descripcion:String,
   avatar: String,
   images: [{
 	  	url: String,
