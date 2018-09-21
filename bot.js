@@ -14,15 +14,15 @@ var TWITTER_ACCESS_TOKEN = '';
 var TWITTER_ACCESS_TOKEN_SECRET = '';
 
 /* Set Twitter search phrase */
-var TWITTER_SEARCH_PHRASE = '#technology OR #design';
-
+var TWITTER_SEARCH_PHRASE = '#FelizLunes';
+var config  = require('./config');
 var Twit = require('twit');
 
 var Bot = new Twit({
-	consumer_key: TWITTER_CONSUMER_KEY,
-	consumer_secret: TWITTER_CONSUMER_SECRET,
-	access_token: TWITTER_ACCESS_TOKEN, 
-	access_token_secret: TWITTER_ACCESS_TOKEN_SECRET
+        consumer_key: config.twitter.TWITTER_CONSUMER_KEY,
+        consumer_secret: config.twitter.TWITTER_CONSUMER_SECRET,
+        access_token: config.twitter.TWITTER_ACCESS_TOKEN,
+        access_token_secret: config.twitter.TWITTER_ACCESS_TOKEN_SECRET
 });
 
 console.log('The bot is running...');
@@ -48,8 +48,15 @@ function BotRetweet() {
 
 	var query = {
 		q: TWITTER_SEARCH_PHRASE,
-		result_type: "recent"
+		result_type: "recent",
+		count: 1
 	}
+	/*
+T.get('search/tweets', { q: 'banana since:2011-07-11', count: 100 }, function(err, data, response) {
+  console.log(data)
+})
+	*/
+
 
 	Bot.get('search/tweets', query, BotGotLatestTweet);
 
@@ -58,11 +65,12 @@ function BotRetweet() {
 			console.log('Bot could not find latest tweet, : ' + error);
 		}
 		else {
+			console.log(response.statuses);
 			var id = {
 				id : data.statuses[0].id_str
 			}
 
-			Bot.post('statuses/retweet/:id', id, BotRetweeted);
+			//Bot.post('statuses/retweet/:id', id, BotRetweeted);
 			
 			function BotRetweeted(error, response) {
 				if (error) {
@@ -135,4 +143,6 @@ function getHomeTimeLine(){
 
 setInterval(getHomeTimeLine, 1*60*1000);
 
-getHomeTimeLine();
+//getHomeTimeLine();
+
+BotRetweet();

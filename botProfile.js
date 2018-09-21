@@ -1,3 +1,6 @@
+
+
+
 var config  = require('./config');
 var mongoose = require('mongoose');
 var Promos = require('./models/Promos.js');
@@ -22,25 +25,43 @@ var Bot = new Twit({
 
 console.log('The bot is running...');
 
-function getProfile(userrr){
+function updateProfileOnline(){
+
+Images.find( function (err, images) {
+
+    if(err)console.log(err);
     
-    var options = { screen_name: userrr};
-      
-    Bot.get('users/show', options , function(err, data) {
-      
+    
+     //   for(var ii=0;ii<images.length;ii++){
+            
+            //var options = { screen_name: images[ii].id};
+            var options = { screen_name: 'xola139',count:50};
+            Bot.get('users/show', options , function(err, data) {
+                console.log(data);
 
-    Images.findOne({id:userrr}, function (err, image) {
-        if (err) return next(err);
-        image.avatar = data.profile_image_url.replace("_normal.jpg","_400x400.jpg");
-        image.descripcion = data.description;
-        Images.findByIdAndUpdate(image._id, image, function (err, post) {
-            if (err) return next(err);
-            console.log(getTime()+" -- save update Image details in profle!!!"+image.id);
-                        
-        });
-    });
+                /*Images.findOne({id:data.screen_name}, function (err, image) {
+                   if(image == null)
+                    return;
+                    if (err) return next(err);
 
-    })
+                    image.avatar = data.profile_image_url.replace("_normal.jpg","_400x400.jpg");
+                    image.descripcion = data.description;
+                    Images.findByIdAndUpdate(image._id, image, function (err, post) {
+                        if (err) return next(err);
+                        console.log(getTime()+" -- save update Image details in profle!!!"+image.id);
+                                    
+                    });
+                });*/
+
+            })
+
+
+   // }
+
+});
+
+      
+    
 }
 
 var validaFecha = function(doc){
@@ -64,17 +85,8 @@ function getTime(){
 
 
 
-fs.readFile('/home/ulfixdev/projectsJavaScript/Scrapping/scrap-image/links.txt', function(err, f){
-    var array = f.toString().split('\n');
-    
-    for(i in array) {
-    if(array[i].length >0){
-        //Init operation
-        getProfile(array[i].replace(/(\n|\r)+$/, ''));
-        
-    }
-    }
+updateProfileOnline();
 
     setTimeout(function(){mongoose.connection.close()}, 20000);
 
-});
+

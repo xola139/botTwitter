@@ -2,6 +2,9 @@ var mongoose = require('mongoose');
 
 var disponibleSchema = new mongoose.Schema({
   id:String,
+  profile_image_url:String,
+  status:Boolean,
+  telefono:String,
   disponibles:[{
   	ciudad:String,
   	descripcion: String,
