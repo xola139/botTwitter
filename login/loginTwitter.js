@@ -21,7 +21,7 @@ casper.start().thenOpen("https://twitter.com/login", function() {
 //Now we have to populate username and password, and submit the form
 casper.then(function(){
     console.log("Login using username and password");
-      this.capture('Login.png');
+    this.capture('Login.png');
     this.evaluate(function(){
         document.getElementsByName("session[username_or_email]")[1].value="";
         document.getElementsByName("session[password]")[1].value="";
@@ -39,10 +39,8 @@ casper.waitWhileSelector('.DashboardProfileCard-avatarImage', function() {
     twettwet(this);
 });
 
-
-
-
 var count=1;
+
 function twettwet(_this){
     casper.reload(function() {
         
@@ -54,34 +52,41 @@ function twettwet(_this){
 
             var result = new Array();
             for(var i=0; i < pageTweets.length; i++){
-                
-                result.push(pageTweets[i].outerHTML);
+                var theItem = $(pageTweets[i].innerHTML);
+                var res = {};
+                res.textcontainer = theItem.find('.js-tweet-text-container > p')[0].innerText;
+                res.username = theItem.find('.username')[0].innerText;
+                res.datatimeamp = theItem.find('.tweet-timestamp')[0].title;
+
+                var _timestamp = theItem.find('._timestamp');
+                res.datatimems = _timestamp[0].dataset.time;
+                res.datatime = _timestamp[0].dataset.timeMs;
+                //console.log(item.len); 
+                result.push(res);
                 
                 
             }
-            return JSON.stringify(result);  
+            return result;  
         });
         
         for(var x=0;x<jsonResult.length;x++){
-            var _r = $("#hola")
-            console.log(_r.find("div"));
+            console.log("**************************************");
+            //console.log(jsonResult[x]);
+            if(jsonResult[x] !=null){
+                console.log(JSON.stringify(jsonResult[x]));
+                
+            }
         }
 
+        console.log(jsonResult.length);
         sleep(40); 
         count++;
         if(count < 50)
             twettwet(_this)
-
-        //}
-        
-        
+      
       
     });
-   
-   
-    
-    //if(count<100)twettwet(_this);
-    //count++;
+
 
             
 }
