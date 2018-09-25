@@ -17,8 +17,8 @@ var casper = require('casper').create({
 
 var url = 'https://twitter.com/login';
 
-var username = "motelesenpuebla@gmail.com";
-var password = "soylaverdura139";
+var username = "";
+var password = "";
 
 casper.start(url, function() {
     this.echo("Loading " + url);
@@ -27,8 +27,8 @@ casper.start(url, function() {
 casper.then(function() {
 	console.log("Login using username and password");
     this.evaluate(function(){
-        document.getElementsByName("session[username_or_email]")[1].value="motelesenpuebla";
-        document.getElementsByName("session[password]")[1].value="soylaverdura139";
+        document.getElementsByName("session[username_or_email]")[1].value="";
+        document.getElementsByName("session[password]")[1].value="";
         //document.getElementsByClassName('flex-table-btn')[1].click();
         document.getElementsByClassName('submit')[1].click();
     });

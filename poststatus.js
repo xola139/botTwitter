@@ -12,8 +12,8 @@ casper.start("https://twitter.com/intent/tweet", function() {
 	this.capture('intentando0.png');
 	this.fill('form#update-form', {
         'status':    'I am watching you',
-        'session[username_or_email]':    'motelesenpuebla',
-        'session[password]':   'soylaverdura139'
+        'session[username_or_email]':    '',
+        'session[password]':   ''
     }, true);
 	
 });
