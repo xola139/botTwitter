@@ -8,15 +8,19 @@ var casper = require('casper').create({
     }
 });
 
+casper.start();
 
-casper.open('', {
-    method: 'POST',
-    data: {
-        
-        'unique_id': true
-    }
-}, function(response){
-    console.log(response.status == 200);
-        
+casper.open('http://localhost:3000/images/xola139', {
+    method: 'post',
+    headers: {
+           'Content-Type': 'application/json; charset=utf-8'
+       },
+       encoding: 'utf8', // not enforced by default
     
 });
+
+casper.then(function() {
+    this.echo('POSTED it.');
+});
+
+casper.run();
